@@ -1,26 +1,25 @@
 # iroh-relay
 
-[English](README.en.md)
+[sculk](https://github.com/KercyDing/sculk) · [English](README.en.md)
 
 本仓库提供适用于 Linux amd64 和 arm64 的 `iroh-relay` 预编译文件，用于部署
 [sculk](https://github.com/KercyDing/sculk) 自建 Relay 服务器。
 
-## 下载
+## 安装
 
-从 [Releases](https://github.com/KercyDing/iroh-relay/releases/latest)
-下载服务器架构对应的文件：
-
-- `iroh-relay-linux-amd64`
-- `iroh-relay-linux-arm64`
-
-下载后安装：
+### Linux amd64
 
 ```bash
-chmod +x iroh-relay-linux-amd64
-sudo install -m 0755 iroh-relay-linux-amd64 /usr/local/bin/iroh-relay
+curl --fail --location --output /tmp/iroh-relay https://github.com/KercyDing/iroh-relay/releases/latest/download/iroh-relay-linux-amd64
+sudo install -m 0755 /tmp/iroh-relay /usr/local/bin/iroh-relay
 ```
 
-arm64 服务器请将命令中的文件名替换为 `iroh-relay-linux-arm64`。
+### Linux arm64
+
+```bash
+curl --fail --location --output /tmp/iroh-relay https://github.com/KercyDing/iroh-relay/releases/latest/download/iroh-relay-linux-arm64
+sudo install -m 0755 /tmp/iroh-relay /usr/local/bin/iroh-relay
+```
 
 ## systemd 服务
 

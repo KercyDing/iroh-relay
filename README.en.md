@@ -1,27 +1,26 @@
 # iroh-relay
 
-[简体中文](README.md)
+[sculk](https://github.com/KercyDing/sculk) · [简体中文](README.md)
 
 This repository provides prebuilt `iroh-relay` binaries for Linux amd64 and
 arm64. They can be used to deploy a self-hosted Relay server for
 [sculk](https://github.com/KercyDing/sculk).
 
-## Download
+## Install
 
-Download the file for your server architecture from the
-[latest Release](https://github.com/KercyDing/iroh-relay/releases/latest):
-
-- `iroh-relay-linux-amd64`
-- `iroh-relay-linux-arm64`
-
-Install the downloaded binary:
+### Linux amd64
 
 ```bash
-chmod +x iroh-relay-linux-amd64
-sudo install -m 0755 iroh-relay-linux-amd64 /usr/local/bin/iroh-relay
+curl --fail --location --output /tmp/iroh-relay https://github.com/KercyDing/iroh-relay/releases/latest/download/iroh-relay-linux-amd64
+sudo install -m 0755 /tmp/iroh-relay /usr/local/bin/iroh-relay
 ```
 
-On an arm64 server, replace the file name with `iroh-relay-linux-arm64`.
+### Linux arm64
+
+```bash
+curl --fail --location --output /tmp/iroh-relay https://github.com/KercyDing/iroh-relay/releases/latest/download/iroh-relay-linux-arm64
+sudo install -m 0755 /tmp/iroh-relay /usr/local/bin/iroh-relay
+```
 
 ## systemd service
 
