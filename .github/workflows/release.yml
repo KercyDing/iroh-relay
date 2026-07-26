@@ -39,6 +39,7 @@ jobs:
               --show-error \
               --retry 3 \
               --retry-all-errors \
+              --user-agent "KercyDing/iroh-relay GitHub Actions version checker" \
               https://crates.io/api/v1/crates/iroh-relay
           )"
           version="$(jq -er '.crate.max_stable_version' <<<"${response}")"
