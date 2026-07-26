@@ -1,0 +1,158 @@
+name: Build iroh-relay releases
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+      timezone: "Asia/Shanghai"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: iroh-relay-release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check crates.io version
+    runs-on: ubuntu-24.04
+    outputs:
+      changed: ${{ steps.version.outputs.changed }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check latest stable version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          response="$(
+            curl \
+              --fail \
+              --silent \
+              --show-error \
+              --retry 3 \
+              --retry-all-errors \
+              https://crates.io/api/v1/crates/iroh-relay
+          )"
+          version="$(jq -er '.crate.max_stable_version' <<<"${response}")"
+          tag="v${version}"
+
+          echo "version=${version}" >>"${GITHUB_OUTPUT}"
+          if git rev-parse --verify --quiet "refs/tags/${tag}" >/dev/null; then
+            echo "changed=false" >>"${GITHUB_OUTPUT}"
+            echo "${tag} is already published."
+          else
+            echo "changed=true" >>"${GITHUB_OUTPUT}"
+            echo "${tag} needs to be built."
+          fi
+
+  build:
+    name: Build ${{ matrix.asset }}
+    needs: check
+    if: needs.check.outputs.changed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            asset: iroh-relay-linux-amd64
+          - runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            asset: iroh-relay-linux-arm64
+    runs-on: ${{ matrix.runner }}
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
+      TARGET: ${{ matrix.target }}
+      ASSET: ${{ matrix.asset }}
+      CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER: musl-gcc
+      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: musl-gcc
+      CC_x86_64_unknown_linux_musl: musl-gcc
+      CC_aarch64_unknown_linux_musl: musl-gcc
+    steps:
+      - name: Install musl toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes musl-tools
+          rustup target add "${TARGET}"
+
+      - name: Build iroh-relay
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          install_root="${RUNNER_TEMP}/iroh-relay-install"
+          cargo install \
+            iroh-relay \
+            --version "=${VERSION}" \
+            --target "${TARGET}" \
+            --root "${install_root}"
+
+          mkdir -p dist
+          install \
+            -m 0755 \
+            "${install_root}/bin/iroh-relay" \
+            "dist/${ASSET}"
+
+      - name: Verify and checksum binary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          file "dist/${ASSET}"
+          if ! file "dist/${ASSET}" | grep -Eq 'static|statically linked'; then
+            echo "Binary is not statically linked." >&2
+            exit 1
+          fi
+
+          (
+            cd dist
+            sha256sum "${ASSET}" >"${ASSET}.sha256"
+          )
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publish v${{ needs.check.outputs.version }}
+    needs:
+      - check
+      - build
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.check.outputs.version }}
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gh release create \
+            "v${VERSION}" \
+            dist/iroh-relay-linux-amd64 \
+            dist/iroh-relay-linux-amd64.sha256 \
+            dist/iroh-relay-linux-arm64 \
+            dist/iroh-relay-linux-arm64.sha256 \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --title "iroh-relay v${VERSION}" \
+            --notes "Automated static Linux builds of iroh-relay v${VERSION} from crates.io."
