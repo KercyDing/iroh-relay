@@ -1,6 +1,6 @@
 # iroh-relay
 
-[sculk](https://github.com/KercyDing/sculk) · [简体中文](README.md)
+[简体中文](README.md)
 
 This repository provides prebuilt `iroh-relay` binaries for Linux amd64 and
 arm64. They can be used to deploy a self-hosted Relay server for

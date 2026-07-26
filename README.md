@@ -1,6 +1,6 @@
 # iroh-relay
 
-[sculk](https://github.com/KercyDing/sculk) · [English](README.en.md)
+[English](README.en.md)
 
 本仓库提供适用于 Linux amd64 和 arm64 的 `iroh-relay` 预编译文件，用于部署
 [sculk](https://github.com/KercyDing/sculk) 自建 Relay 服务器。

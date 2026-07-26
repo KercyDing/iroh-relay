@@ -93,6 +93,7 @@ jobs:
           cargo install \
             iroh-relay \
             --version "=${VERSION}" \
+            --features server \
             --target "${TARGET}" \
             --root "${install_root}"
 
@@ -127,7 +128,7 @@ jobs:
           retention-days: 7
 
   release:
-    name: Publish v${{ needs.check.outputs.version }}
+    name: Publish releases
     needs:
       - check
       - build
