@@ -8,18 +8,14 @@ arm64. They can be used to deploy a self-hosted Relay server for
 
 ## Install
 
-### Linux amd64
-
 ```bash
-curl --fail --location --output /tmp/iroh-relay https://github.com/KercyDing/iroh-relay/releases/latest/download/iroh-relay-linux-amd64
-sudo install -m 0755 /tmp/iroh-relay /usr/local/bin/iroh-relay
+# GitHub Mirror, Recommended
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/KercyDing/iroh-relay/main/script.sh)"
 ```
 
-### Linux arm64
-
 ```bash
-curl --fail --location --output /tmp/iroh-relay https://github.com/KercyDing/iroh-relay/releases/latest/download/iroh-relay-linux-arm64
-sudo install -m 0755 /tmp/iroh-relay /usr/local/bin/iroh-relay
+# CNB Mirror
+bash -c "$(curl -fsSL https://cnb.cool/SeaLantern-studio/iroh-relay/-/raw/main/script.sh)"
 ```
 
 ## systemd service

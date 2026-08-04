@@ -7,18 +7,14 @@
 
 ## 安装
 
-### Linux amd64
-
 ```bash
-curl --fail --location --output /tmp/iroh-relay https://github.com/KercyDing/iroh-relay/releases/latest/download/iroh-relay-linux-amd64
-sudo install -m 0755 /tmp/iroh-relay /usr/local/bin/iroh-relay
+# CNB 镜像源，推荐
+bash -c "$(curl -fsSL https://cnb.cool/SeaLantern-studio/iroh-relay/-/raw/main/script.sh)"
 ```
 
-### Linux arm64
-
 ```bash
-curl --fail --location --output /tmp/iroh-relay https://github.com/KercyDing/iroh-relay/releases/latest/download/iroh-relay-linux-arm64
-sudo install -m 0755 /tmp/iroh-relay /usr/local/bin/iroh-relay
+# GitHub 源
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/KercyDing/iroh-relay/main/script.sh)"
 ```
 
 ## systemd 服务
