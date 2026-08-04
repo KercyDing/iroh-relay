@@ -7,13 +7,15 @@
 
 ## 安装
 
-```bash
-# CNB 镜像源，推荐
-bash -c "$(curl -fsSL https://cnb.cool/SeaLantern-studio/iroh-relay/-/raw/main/script.sh)"
-```
+CNB 镜像源，推荐：
 
 ```bash
-# GitHub 源
+bash -c "$(curl -fsSL https://cnb.cool/SeaLantern-studio/iroh-relay/-/git/raw/main/script.sh)"
+```
+
+GitHub 源：
+
+```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/KercyDing/iroh-relay/main/script.sh)"
 ```
 

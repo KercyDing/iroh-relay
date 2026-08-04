@@ -8,14 +8,16 @@ arm64. They can be used to deploy a self-hosted Relay server for
 
 ## Install
 
+GitHub mirror, recommended:
+
 ```bash
-# GitHub Mirror, Recommended
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/KercyDing/iroh-relay/main/script.sh)"
 ```
 
+CNB mirror:
+
 ```bash
-# CNB Mirror
-bash -c "$(curl -fsSL https://cnb.cool/SeaLantern-studio/iroh-relay/-/raw/main/script.sh)"
+bash -c "$(curl -fsSL https://cnb.cool/SeaLantern-studio/iroh-relay/-/git/raw/main/script.sh)"
 ```
 
 ## systemd service
