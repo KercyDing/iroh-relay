@@ -6,6 +6,8 @@ GITHUB_RELEASE_BASE="https://github.com/KercyDing/iroh-relay/releases/latest/dow
 CNB_RELEASES_URL="https://cnb.cool/SeaLantern-studio/iroh-relay/-/releases"
 CNB_RELEASE_BASE="https://cnb.cool/SeaLantern-studio/iroh-relay/-/releases/download"
 DESTINATION="${IROH_RELAY_DESTINATION:-/usr/local/bin/iroh-relay}"
+SERVICE_FILE="/etc/systemd/system/iroh-relay.service"
+RELAY_PORT="3340"
 
 case "$(uname -m)" in
   x86_64) asset="iroh-relay-linux-amd64" ;;
@@ -19,6 +21,24 @@ esac
 if [[ "$(uname -s)" != "Linux" ]]; then
   echo "iroh-relay is only distributed for Linux." >&2
   exit 1
+fi
+
+for command in curl grep install sha256sum systemctl; do
+  if ! command -v "${command}" >/dev/null 2>&1; then
+    echo "Required command is unavailable: ${command}" >&2
+    exit 1
+  fi
+done
+
+if [[ "${EUID}" -eq 0 ]]; then
+  sudo_command=()
+else
+  if ! command -v sudo >/dev/null 2>&1; then
+    echo "sudo is required to install iroh-relay and configure systemd." >&2
+    exit 1
+  fi
+  sudo_command=(sudo)
+  sudo -v
 fi
 
 work_dir="$(mktemp -d)"
@@ -55,10 +75,51 @@ else
   download_and_verify "${GITHUB_RELEASE_BASE}" "GitHub"
 fi
 
-if [[ -w "$(dirname "${DESTINATION}")" ]]; then
-  install -m 0755 "${work_dir}/${asset}" "${DESTINATION}"
-else
-  sudo install -m 0755 "${work_dir}/${asset}" "${DESTINATION}"
+"${sudo_command[@]}" install -m 0755 "${work_dir}/${asset}" "${DESTINATION}"
+
+cat <<EOF | "${sudo_command[@]}" tee "${SERVICE_FILE}" >/dev/null
+[Unit]
+Description=Iroh Relay Server (dev mode, plain HTTP)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=${DESTINATION} --dev
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+"${sudo_command[@]}" systemctl daemon-reload
+"${sudo_command[@]}" systemctl enable iroh-relay >/dev/null
+"${sudo_command[@]}" systemctl restart iroh-relay
+
+if ! "${sudo_command[@]}" systemctl is-active --quiet iroh-relay; then
+  echo "iroh-relay failed to start. Recent logs:" >&2
+  "${sudo_command[@]}" journalctl --unit iroh-relay --no-pager --lines 30 >&2
+  exit 1
 fi
 
-echo "Installed iroh-relay to ${DESTINATION}"
+public_ip="$(
+  curl --fail --location --silent --show-error --connect-timeout 5 --max-time 10 -4 https://api.ipify.org 2>/dev/null ||
+    curl --fail --location --silent --show-error --connect-timeout 5 --max-time 10 -4 https://icanhazip.com 2>/dev/null ||
+    true
+)"
+public_ip="${public_ip//$'\n'/}"
+
+echo
+echo "iroh-relay is running."
+echo "Binary: ${DESTINATION}"
+echo "Service: sudo systemctl status iroh-relay"
+if [[ "${public_ip}" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]]; then
+  echo
+  echo "Relay URL: http://${public_ip}:${RELAY_PORT}"
+  echo "Allow inbound TCP ${RELAY_PORT} in your cloud security group, firewall, and NAT router if applicable."
+else
+  echo
+  echo "Could not determine the public IPv4 address."
+  echo "Relay URL format: http://<your-public-ip>:${RELAY_PORT}"
+  echo "Allow inbound TCP ${RELAY_PORT} in your cloud security group, firewall, and NAT router if applicable."
+fi
