@@ -140,3 +140,7 @@ sudo systemctl disable --now iroh-relay
 
 不适合。`--dev` 使用明文 HTTP，主要用于测试。长期部署应使用域名和 TLS，
 并根据实际流量配置访问控制、监控和带宽限制。
+
+## 许可证
+
+[Apache License 2.0](LICENSE)

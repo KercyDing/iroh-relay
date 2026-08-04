@@ -160,3 +160,7 @@ sudo systemctl disable --now iroh-relay
 No. `--dev` uses plain HTTP and is intended primarily for testing. A long-term
 deployment should use a domain and TLS, with access controls, monitoring, and
 bandwidth limits appropriate for its expected traffic.
+
+## License
+
+[Apache License 2.0](LICENSE)
